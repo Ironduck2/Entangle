@@ -14,7 +14,9 @@ int main() {
     cout << "Size of qbits list: " << myQbits.getListSize() << endl;
     
     //QGateX.printQuantumGateMatrix();
-    myQbits.applyGate(QGateH);
+    myQbits.gateToQueue(QGateH);
+
+    myQbits.applyGateQueue();
     myQbits.printQbits();
 
     return 0;
