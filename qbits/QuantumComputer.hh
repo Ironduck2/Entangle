@@ -6,15 +6,11 @@
 #include <iostream>
 #include <complex>
 #include <cmath>
-#include <queue>
-
-using namespace std;
 
 class QuantumComputer{
 private:
     int amountQbits_;
-    vector<complex<double>> qbitsList;
-    queue<QuantumGate> gateQueue;
+    std::vector<std::complex<double>> qbitsList;
 
 public:
     QuantumComputer(int amountQbits) :
@@ -31,28 +27,17 @@ public:
     }
 
     void applyGate(const QuantumGate& gate) {
-        vector<complex<double>> qbitsListCopy = qbitsList;
+        std::vector<std::complex<double>> qbitsListCopy = qbitsList;
         qbitsList[0] = gate.getQuantumGateMatrix()[0][0] * qbitsListCopy[0] + gate.getQuantumGateMatrix()[0][1] * qbitsListCopy[1];
         qbitsList[1] = gate.getQuantumGateMatrix()[1][0] * qbitsListCopy[0] + gate.getQuantumGateMatrix()[1][1] * qbitsListCopy[1];
     }
 
-    void applyGateQueue() {
-        while (!gateQueue.empty()) {
-            applyGate(gateQueue.front());
-            gateQueue.pop();
-        } 
-    }
-
-    void gateToQueue(const QuantumGate& gate) {
-        gateQueue.push(gate);
-    }
-
     void printQbits() const {
         for (const auto& qbit : qbitsList) {
-            cout << qbit << " ";
+            std::cout << qbit << " ";
         }
-        cout << endl;
-    } 
+        std::cout << std::endl;
+    }
 };
 
 #endif
