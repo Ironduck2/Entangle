@@ -10,6 +10,7 @@ using namespace std;
 class QuantumGate{
 private:
     vector<vector<complex<double>>> quantumGateMatrix;
+    //añadir cosa que dice los bits a los que se aplica 
 
 public:
     QuantumGate(vector<vector<complex<double>>> gateMatrix) :
@@ -22,9 +23,9 @@ public:
     void printQuantumGateMatrix() const {
         cout << "Quantum Gate Matrix:" << endl;
         cout << "Rows: " << quantumGateMatrix.size() << ", Columns: " << quantumGateMatrix[0].size() << endl;
-        for (const auto& row : quantumGateMatrix) {
-            for (const auto& element : row) {
-                cout << element << " ";
+        for (int i = 0; i < quantumGateMatrix.size(); ++i) {
+            for (int j = 0; j < quantumGateMatrix[i].size(); ++j) {
+                cout << quantumGateMatrix[i][j] << " ";
             }
             cout << endl;
         }
