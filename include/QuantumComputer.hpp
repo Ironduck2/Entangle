@@ -1,6 +1,7 @@
 #ifndef QuantumComputer_HH
 #define QuantumComputer_HH
 
+#include "CondensedToNMatrix.hpp"
 #include "QuantumGate.hpp"
 #include <vector>
 #include <iostream>
@@ -32,15 +33,24 @@ public:
     }
 
 
-    void applyGate(const CMatrix<std::complex<double>>& gateMatrix, int targetQbit = 0) {
+    void applyGate(CMatrix<std::complex<double>>& gateMatrix, int targetQbit = 0) {
 
+        targetQbit = amountQbits_ - 1 - targetQbit;
+        if(targetQbit < 0 || targetQbit >= amountQbits_) {
+            cerr << "Error: Target qubit index is out of range." << endl;
+            return;
+        }
+
+        if(targetQbit > 0) {
+            gateMatrix.IdentityTensoredWithMatrix(pow(2, targetQbit));
+        }
+        if(amountQbits_ - 1 - targetQbit > 0) {
+            gateMatrix.MatrixTensoredWithIdentity(pow(2, amountQbits_ - 1 - targetQbit));
+        }
+        
         vector<complex<double>> newQbitsList(qbitsList.size(), complex<double>(0, 0));
         gateMatrix.MultiplyMatrixVector(qbitsList, newQbitsList);
         qbitsList = newQbitsList;
-        //IdentityTensoredWithMatrix(finalGateMatrix);    
-        // vector<complex<double>> qbitsListCopy = qbitsList;
-        // qbitsList[0] = gate.getQuantumGateMatrix()[0][0] * qbitsListCopy[0] + gate.getQuantumGateMatrix()[0][1] * qbitsListCopy[1];
-        // qbitsList[1] = gate.getQuantumGateMatrix()[1][0] * qbitsListCopy[0] + gate.getQuantumGateMatrix()[1][1] * qbitsListCopy[1];
     }
 
     void applyGateQueue() {
