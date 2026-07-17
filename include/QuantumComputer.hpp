@@ -14,7 +14,7 @@ class QuantumComputer{
 private:
     int amountQbits_;
     vector<complex<double>> qbitsList;
-    queue<QuantumGate> gateQueue;
+    queue<CMatrix<std::complex<double>>> gateQueue;
 
     
 public:
@@ -32,8 +32,11 @@ public:
     }
 
 
-    void applyGate(vector<vector<pair<int, complex<double>>>>& finalGateMatrix, int targetQbit = 0) {
+    void applyGate(const CMatrix<std::complex<double>>& gateMatrix, int targetQbit = 0) {
 
+        vector<complex<double>> newQbitsList(qbitsList.size(), complex<double>(0, 0));
+        gateMatrix.MultiplyMatrixVector(qbitsList, newQbitsList);
+        qbitsList = newQbitsList;
         //IdentityTensoredWithMatrix(finalGateMatrix);    
         // vector<complex<double>> qbitsListCopy = qbitsList;
         // qbitsList[0] = gate.getQuantumGateMatrix()[0][0] * qbitsListCopy[0] + gate.getQuantumGateMatrix()[0][1] * qbitsListCopy[1];
@@ -48,7 +51,7 @@ public:
     }
 
     void gateToQueue(const QuantumGate& gate) {
-        gateQueue.push(gate);
+        //gateQueue.push(gate);
     }
 
     void printQbits() const {

@@ -55,6 +55,49 @@ class CMatrix{
             }
         }
 
+        void MatrixTensoredWithIdentity (int n) {
+            int originalDim = rowPointer.size() - 1;
+            int newDim = originalDim * n;
+
+            std::vector<T> newCondensed;
+            std::vector<int> newColIndexes;
+            std::vector<int> newRowPointer;
+
+            newCondensed.reserve(condensedMatrix.size() * n);
+            newColIndexes.reserve(colIndexes.size() * n);
+            newRowPointer.reserve(newDim + 1);
+
+            newRowPointer.push_back(0);
+
+            for (int i = 0; i < originalDim; ++i) {
+                for (int k = 0; k < n; ++k) {
+                    
+                    for (int j = rowPointer[i]; j < rowPointer[i + 1]; ++j) {
+                        newCondensed.push_back(condensedMatrix[j]);
+                        
+                        newColIndexes.push_back(colIndexes[j] * n + k);
+                    }
+                    
+                    newRowPointer.push_back(newCondensed.size());
+                }
+            }
+
+            condensedMatrix = std::move(newCondensed);
+            colIndexes = std::move(newColIndexes);
+            rowPointer = std::move(newRowPointer);
+        }
+
+        void MultiplyMatrixVector(std::vector<T>& vec, std::vector<T>& result) const {
+            int dim = rowPointer.size() - 1;
+            result.assign(dim, T(0));
+
+            for (int i = 0; i < dim; ++i) {
+                for (int j = rowPointer[i]; j < rowPointer[i + 1]; ++j) {
+                    result[i] += condensedMatrix[j] * vec[colIndexes[j]];
+                }
+            }
+        }
+
         void printCMatrix() const {
             std::cout << "Condensed Matrix: ";
             for (const auto& val : condensedMatrix) {
