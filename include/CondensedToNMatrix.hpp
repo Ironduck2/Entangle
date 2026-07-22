@@ -117,8 +117,6 @@ class CMatrix{
             }
             std::cout << std::endl;
         }
-
-
 };
 
 #endif

@@ -2,6 +2,7 @@
 #define QuantumComputer_HH
 
 #include "CondensedToNMatrix.hpp"
+#include "ArrayMatrix.hpp"
 #include "QuantumGate.hpp"
 #include <vector>
 #include <iostream>
@@ -34,6 +35,26 @@ public:
 
 
     void applyGate(CMatrix<std::complex<double>>& gateMatrix, int targetQbit = 0) {
+
+        targetQbit = amountQbits_ - 1 - targetQbit;
+        if(targetQbit < 0 || targetQbit >= amountQbits_) {
+            cerr << "Error: Target qubit index is out of range." << endl;
+            return;
+        }
+
+        if(targetQbit > 0) {
+            gateMatrix.IdentityTensoredWithMatrix(pow(2, targetQbit));
+        }
+        if(amountQbits_ - 1 - targetQbit > 0) {
+            gateMatrix.MatrixTensoredWithIdentity(pow(2, amountQbits_ - 1 - targetQbit));
+        }
+        
+        vector<complex<double>> newQbitsList(qbitsList.size(), complex<double>(0, 0));
+        gateMatrix.MultiplyMatrixVector(qbitsList, newQbitsList);
+        qbitsList = newQbitsList;
+    }
+
+    void applyGate(AMatrix<std::complex<double>>& gateMatrix, int targetQbit = 0) {
 
         targetQbit = amountQbits_ - 1 - targetQbit;
         if(targetQbit < 0 || targetQbit >= amountQbits_) {
