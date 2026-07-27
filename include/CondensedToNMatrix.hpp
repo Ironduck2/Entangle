@@ -11,18 +11,19 @@ template <typename T>
 //This class only works for square matrices
 class CMatrix{
     private:
-        T CondensedN;
         std::vector<T> condensedMatrix;
-        std::vector<int> colIndexes;
-        std::vector<int> rowPointer;
+        std::vector<int32_t> colIndexes;
+        std::vector<int32_t> rowPointer;
 
     public:
-        CMatrix(int n) : CondensedN(n) {}
-
-        CMatrix(const std::vector<std::vector<T>>& matrix, int n) : CondensedN(n) {matrixToCMatrix(matrix);}
+        CMatrix(const std::vector<std::vector<T>>& matrix) {matrixToCMatrix(matrix);}
 
 
         void matrixToCMatrix(const std::vector<std::vector<T>>& matrix) {
+            condensedMatrix.clear();
+            colIndexes.clear();
+            rowPointer.clear();
+            
             rowPointer.push_back(0);
             for (const auto& row : matrix) {
                 for (int j = 0; j < row.size(); ++j) {
@@ -117,8 +118,6 @@ class CMatrix{
             }
             std::cout << std::endl;
         }
-
-
 };
 
 #endif

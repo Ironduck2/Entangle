@@ -33,7 +33,7 @@ public:
     }
 
 
-    void applyGate(CMatrix<std::complex<double>>& gateMatrix, int targetQbit = 0) {
+    void applyGate(CMatrix<std::complex<double>> gateMatrix, int targetQbit = 0) {
 
         targetQbit = amountQbits_ - 1 - targetQbit;
         if(targetQbit < 0 || targetQbit >= amountQbits_) {
