@@ -1,42 +1,73 @@
 #include "QuantumComputer.hpp"
 #include "QuantumGate.hpp"
 #include "CondensedToNMatrix.hpp"
-#include "ArrayMatrix.hpp"
 #include <chrono>
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 using namespace std::chrono;
 
+void timeTest();
+
 int main() {
+    bool test = true;
 
-    auto start =
-        high_resolution_clock::now();
-
-
-    QuantumComputer myQbits(20); // aqui pones los qbits que quieres simular
-
-    // estas dos lineas son para hacer el test con AMatrix (la que guarda 0)
-    //AMatrix<std::complex<double>> QGateHA({{1/sqrt(2), 1/sqrt(2)}, {1/sqrt(2), -1/sqrt(2)}});
-    //myQbits.applyGate(QGateHA, 7); // el segundo numero es el qbit al que le aplicas la puerta logica
+    if (!test){
+        QuantumComputer myQbits(10);
+        
+        CMatrix<std::complex<double>> QGateH({{1/sqrt(2), 1/sqrt(2)}, {1/sqrt(2), -1/sqrt(2)}});
     
-    // estas dos lineas son para hacer el test con CMatrix (la que comprime 0)
-    CMatrix<std::complex<double>> QGateHC({{1/sqrt(2), 1/sqrt(2)}, {1/sqrt(2), -1/sqrt(2)}}, 0);
-    myQbits.applyGate(QGateHC, 10); // el segundo numero es el qbit al que le aplicas la puerta logica
+        auto start = high_resolution_clock::now();
+        myQbits.applyGate(QGateH, 5);
+        auto stop = high_resolution_clock::now();
+    
+    
+        auto duration = duration_cast<microseconds>(stop - start);
+        cout << "Execution time: " << duration.count() << " microseconds" << endl;
 
-    //si haces el test con un timpo de matriz comenta lo otro. Que no se hagan los dos a la vez
-
-
-    myQbits.printQbits();
-
-    auto stop =
-        high_resolution_clock::now();
-
-    auto duration =
-        duration_cast<microseconds>(
-            stop - start);
-
-    cout << "Execution time: " << duration.count() << " microseconds" << endl;
+    }
+    else {
+        timeTest();
+    }
 
     return 0;
+}
+
+void timeTest(){
+    QuantumComputer myQbits(20);
+    CMatrix<std::complex<double>> QGateH({{1/sqrt(2), 1/sqrt(2)}, {1/sqrt(2), -1/sqrt(2)}});
+
+    for (int i = 0; i < 10; ++i) {
+        myQbits.applyGate(QGateH, 10);
+    }
+
+    const int iterations = 100;
+    std::vector<long long> times;
+    times.reserve(iterations);
+
+    for (int i = 0; i < iterations; ++i) {
+        auto start = high_resolution_clock::now();
+        
+        myQbits.applyGate(QGateH, 10);
+        
+        auto stop = high_resolution_clock::now();
+        times.push_back(duration_cast<microseconds>(stop - start).count());
+    }
+
+    std::sort(times.begin(), times.end());
+
+    long long min_time = times.front();
+    long long max_time = times.back();
+    long long median_time = times[times.size() / 2];
+    
+    long long sum = 0;
+    for (long long t : times) sum += t;
+    long long avg_time = sum / times.size();
+
+    cout << "--- Benchmark Results (" << iterations << " iterations) ---" << endl;
+    cout << "Minimum time: " << min_time << " us" << endl;
+    cout << "Median time:  " << median_time << " us" << endl;
+    cout << "Average time: " << avg_time << " us" << endl;
+    cout << "Maximum time: " << max_time << " us (Usually an OS interrupt)" << endl;
 }

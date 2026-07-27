@@ -13,7 +13,7 @@ private:
     CMatrix<std::complex<double>> quantumGateMatrix;
 public:
     QuantumGate(std::vector<std::vector<std::complex<double>>> gateMatrix) :
-        quantumGateMatrix(gateMatrix, 0) {}
+        quantumGateMatrix(gateMatrix) {}
 
     CMatrix<std::complex<double>> getQuantumGateMatrix() const {
         return quantumGateMatrix;
