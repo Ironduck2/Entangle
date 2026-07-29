@@ -11,7 +11,7 @@ using namespace std::chrono;
 void timeTest();
 
 int main() {
-    bool test = true;
+    bool test = false;
 
     if (!test){
         QuantumComputer myQbits(10);
@@ -25,7 +25,6 @@ int main() {
     
         auto duration = duration_cast<microseconds>(stop - start);
         cout << "Execution time: " << duration.count() << " microseconds" << endl;
-
     }
     else {
         timeTest();
