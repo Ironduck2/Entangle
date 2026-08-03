@@ -1,5 +1,4 @@
 #include "QuantumComputer.hpp"
-#include "QuantumGate.hpp"
 #include "CondensedToNMatrix.hpp"
 #include <chrono>
 #include <iostream>
@@ -14,17 +13,19 @@ int main() {
     bool test = false;
 
     if (!test){
-        QuantumComputer myQbits(10);
+        QuantumComputer myQbits(1);
         
         CMatrix<std::complex<double>> QGateH({{1/sqrt(2), 1/sqrt(2)}, {1/sqrt(2), -1/sqrt(2)}});
     
         auto start = high_resolution_clock::now();
-        myQbits.applyGate(QGateH, 5);
+        myQbits.applyGate(QGateH, 0);
         auto stop = high_resolution_clock::now();
     
     
         auto duration = duration_cast<microseconds>(stop - start);
         cout << "Execution time: " << duration.count() << " microseconds" << endl;
+
+        myQbits.printQbits();
     }
     else {
         timeTest();

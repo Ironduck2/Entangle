@@ -2,12 +2,10 @@
 #define QuantumComputer_HH
 
 #include "CondensedToNMatrix.hpp"
-#include "QuantumGate.hpp"
 #include <vector>
 #include <iostream>
 #include <complex>
 #include <cmath>
-#include <queue>
 
 using namespace std;
 
@@ -15,7 +13,6 @@ class QuantumComputer{
 private:
     int amountQbits_;
     vector<complex<double>> qbitsList;
-    queue<CMatrix<std::complex<double>>> gateQueue;
 
     
 public:
@@ -51,17 +48,6 @@ public:
         vector<complex<double>> newQbitsList(qbitsList.size(), complex<double>(0, 0));
         gateMatrix.MultiplyMatrixVector(qbitsList, newQbitsList);
         qbitsList = newQbitsList;
-    }
-
-    void applyGateQueue() {
-        // while (!gateQueue.empty()) {
-        //     applyGate(gateQueue.front().getQuantumGateMatrix());
-        //     gateQueue.pop();
-        // } 
-    }
-
-    void gateToQueue(const QuantumGate& gate) {
-        //gateQueue.push(gate);
     }
 
     void printQbits() const {
