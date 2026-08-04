@@ -19,14 +19,28 @@ int main() {
             {1/sqrt(2), 1/sqrt(2)},
             {1/sqrt(2), -1/sqrt(2)}
         };
+
+        std::vector<std::vector<std::complex<double>>> CNOT = {
+            {1, 0, 0, 0},
+            {0, 1, 0, 0},
+            {0, 0, 0, 1},
+            {0, 0, 1, 0}
+        };
     
         auto start = high_resolution_clock::now();
-        myQbits.applyGate(QGateH, 1);
+        myQbits.applyGate(QGateH, 0);
         auto stop = high_resolution_clock::now();
+        auto duration1 = duration_cast<microseconds>(stop - start);
+
+        start = high_resolution_clock::now();
+        myQbits.applyMultiQubitGate(CNOT, {1, 0});
+        stop = high_resolution_clock::now();
+        auto duration2 = duration_cast<microseconds>(stop - start);
+
     
     
-        auto duration = duration_cast<microseconds>(stop - start);
-        cout << "Execution time: " << duration.count() << " microseconds" << endl;
+        cout << "Execution time: " << duration1.count() << " microseconds" << endl;
+        cout << "Execution time: " << duration2.count() << " microseconds" << endl;
 
         myQbits.printQbits();
     }
