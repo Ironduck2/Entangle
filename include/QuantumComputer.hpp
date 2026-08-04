@@ -107,8 +107,8 @@ public:
         }
     }
     
-    void printQbits() const {
-        for (int i = 0; i < 4; ++i) {
+    void printQbits(int n) const {
+        for (int i = 0; i < qbitsList.size(); ++i) {
             cout << qbitsList[i] << " ";
         }
         cout << endl;

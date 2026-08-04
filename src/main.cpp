@@ -9,11 +9,40 @@ using namespace std::chrono;
 
 void timeTest();
 
+vector<vector<complex<double>>> generateOracle(int secretKey, int numStates) {
+    vector<vector<complex<double>>> oracle(numStates, vector<complex<double>>(numStates, 0.0));
+    for (int i = 0; i < numStates; ++i) {
+        if (i == secretKey) {
+            oracle[i][i] = -1.0;
+        } else {
+            oracle[i][i] =  1.0;
+        }
+    }
+    return oracle;
+}
+
+vector<vector<complex<double>>> generateDiffuser(int numStates) {
+    vector<vector<complex<double>>> diffuser(numStates, vector<complex<double>>(numStates, 0.0));
+    for (int row = 0; row < numStates; ++row) {
+        for (int col = 0; col < numStates; ++col) {
+            if (row == col) {
+                diffuser[row][col] = (2.0 / numStates) - 1.0;
+            } else {
+                diffuser[row][col] = (2.0 / numStates);
+            }
+        }
+    }
+    return diffuser;
+}
+
 int main() {
     bool test = false;
 
     if (!test){
-        QuantumComputer myQbits(15);
+        int numQubits = 4;
+        int numStates = pow(2, numQubits); 
+    
+        QuantumComputer myQbits(numQubits);
 
         std::vector<std::vector<std::complex<double>>> QGateH = {
             {1/sqrt(2), 1/sqrt(2)},
@@ -26,23 +55,34 @@ int main() {
             {0, 0, 0, 1},
             {0, 0, 1, 0}
         };
-    
+
+
+        
         auto start = high_resolution_clock::now();
-        myQbits.applyGate(QGateH, 0);
+
+        int mySecretKey = 5;
+
+        vector<vector<complex<double>>> Oracle = generateOracle(mySecretKey, numStates);
+        vector<vector<complex<double>>> Diffuser = generateDiffuser(numStates);
+
+        for (int i = 0; i < myQbits.getAmountQbits(); ++i) {
+            myQbits.applyGate(QGateH, i);
+        }
+
+        int iterations = 3;
+        vector<int> allQubits = {0, 1, 2, 3};
+
+        for (int i = 0; i < iterations; ++i) {
+            myQbits.applyMultiQubitGate(Oracle, allQubits);
+            
+            myQbits.applyMultiQubitGate(Diffuser, allQubits); 
+        }
+
         auto stop = high_resolution_clock::now();
-        auto duration1 = duration_cast<microseconds>(stop - start);
+        auto duration = duration_cast<microseconds>(stop - start);
+        cout << "Execution time: " << duration.count() << " microseconds" << endl;
 
-        start = high_resolution_clock::now();
-        myQbits.applyMultiQubitGate(CNOT, {1, 0});
-        stop = high_resolution_clock::now();
-        auto duration2 = duration_cast<microseconds>(stop - start);
-
-    
-    
-        cout << "Execution time: " << duration1.count() << " microseconds" << endl;
-        cout << "Execution time: " << duration2.count() << " microseconds" << endl;
-
-        myQbits.printQbits();
+        myQbits.printQbits(8);
     }
     else {
         timeTest();
