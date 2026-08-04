@@ -13,12 +13,15 @@ int main() {
     bool test = false;
 
     if (!test){
-        QuantumComputer myQbits(1);
-        
-        CMatrix<std::complex<double>> QGateH({{1/sqrt(2), 1/sqrt(2)}, {1/sqrt(2), -1/sqrt(2)}});
+        QuantumComputer myQbits(15);
+
+        std::vector<std::vector<std::complex<double>>> QGateH = {
+            {1/sqrt(2), 1/sqrt(2)},
+            {1/sqrt(2), -1/sqrt(2)}
+        };
     
         auto start = high_resolution_clock::now();
-        myQbits.applyGate(QGateH, 0);
+        myQbits.applyGate(QGateH, 1);
         auto stop = high_resolution_clock::now();
     
     
@@ -36,7 +39,10 @@ int main() {
 
 void timeTest(){
     QuantumComputer myQbits(20);
-    CMatrix<std::complex<double>> QGateH({{1/sqrt(2), 1/sqrt(2)}, {1/sqrt(2), -1/sqrt(2)}});
+    std::vector<std::vector<std::complex<double>>> QGateH = {
+            {1/sqrt(2), 1/sqrt(2)},
+            {1/sqrt(2), -1/sqrt(2)}
+        };
 
     for (int i = 0; i < 10; ++i) {
         myQbits.applyGate(QGateH, 10);
