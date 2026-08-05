@@ -1,48 +1,74 @@
 #include "QuantumComputer.hpp"
 #include "CondensedToNMatrix.hpp"
 #include <chrono>
+#include <cmath>
 #include <iostream>
 #include <algorithm>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 using namespace std;
 using namespace std::chrono;
 
+void simpleTest();
 void timeTest();
+void groverAlgorithm();
+
+std::vector<std::vector<std::complex<double>>> QGateH = {
+    {1/sqrt(2), 1/sqrt(2)},
+    {1/sqrt(2), -1/sqrt(2)}
+};
+
+std::vector<std::vector<std::complex<double>>> CNOT = {
+    {1, 0, 0, 0},
+    {0, 1, 0, 0},
+    {0, 0, 0, 1},
+    {0, 0, 1, 0}
+};
 
 int main() {
     bool test = false;
+    bool grover = true;
 
-    if (!test){
-        QuantumComputer myQbits(15);
-
-        std::vector<std::vector<std::complex<double>>> QGateH = {
-            {1/sqrt(2), 1/sqrt(2)},
-            {1/sqrt(2), -1/sqrt(2)}
-        };
-    
-        auto start = high_resolution_clock::now();
-        myQbits.applyGate(QGateH, 1);
-        auto stop = high_resolution_clock::now();
-    
-    
-        auto duration = duration_cast<microseconds>(stop - start);
-        cout << "Execution time: " << duration.count() << " microseconds" << endl;
-
-        myQbits.printQbits();
+    if (!test && !grover) {
+        simpleTest();
     }
-    else {
+    else if (test) {
         timeTest();
+    }
+    else if (grover){
+        groverAlgorithm();
     }
 
     return 0;
 }
 
+void simpleTest(){
+    int numQbits = 20;
+    QuantumComputer myQbits(numQbits);
+
+    auto start = high_resolution_clock::now();
+
+    // ======= code to test speed here =======
+
+    for (int i = 0; i < numQbits; ++i) {
+        myQbits.applyGate(QGateH, i);
+    }
+
+    // ======= code to test speed here =======
+
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    cout << "Execution time: " << duration.count() << " microseconds" << endl;
+
+    myQbits.printQbits(8);
+}
+
 void timeTest(){
-    QuantumComputer myQbits(20);
-    std::vector<std::vector<std::complex<double>>> QGateH = {
-            {1/sqrt(2), 1/sqrt(2)},
-            {1/sqrt(2), -1/sqrt(2)}
-        };
+    int numQbits = 20;
+    QuantumComputer myQbits(numQbits);
 
     for (int i = 0; i < 10; ++i) {
         myQbits.applyGate(QGateH, 10);
@@ -76,4 +102,37 @@ void timeTest(){
     cout << "Median time:  " << median_time << " us" << endl;
     cout << "Average time: " << avg_time << " us" << endl;
     cout << "Maximum time: " << max_time << " us (Usually an OS interrupt)" << endl;
+}
+
+void groverAlgorithm() {
+    int numQbits = 16;
+    int targetKey = 0;
+    int iterations = 201; // recomended number of iterations follows the formula: floor((pi/4) * sqrt(2^n)) where n is numQbits. 
+    cout << "Number of iterations for Grover's algorithm: " << iterations << endl;
+
+    QuantumComputer myQbits(numQbits);
+
+
+    for (int i = 0; i < numQbits; ++i) {
+        myQbits.applyGate(QGateH, i);
+    }
+
+    auto start = high_resolution_clock::now();
+
+    // ======= code to test speed here =======
+
+
+    for (int i = 0; i < iterations; ++i) {
+        myQbits.applyOracle(targetKey);
+        myQbits.applyDiffusionOperator();
+    }
+
+    // ======= code to test speed here =======
+
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    cout << "Execution time: " << duration.count() << " microseconds" << endl;
+
+
+    myQbits.printQbits(8);
 }
