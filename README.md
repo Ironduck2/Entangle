@@ -13,20 +13,23 @@ Before building the project, ensure you have the following installed:
 ## Running the Project
 
 1. **Configure CMake:**
-  ```bash
-  cmake -S . -B build
-  ```
+
+   ```bash
+   cmake -S . -B build
+   ```
 
 2. **Compile the binary:**
-  ```bash
-  cd build
-  make
-  ```
+
+   ```bash
+   cd build
+   make
+   ```
 
 3. **Execute the program:**
-    ```bash
-   ./Entangle
-    ```
+
+   ```bash
+   ./Entangle
+   ```
 
 ## Grover's algorithm
 
@@ -57,6 +60,7 @@ The quantum gates already contained in this simulation are:
 ### 3-Qubit Gates (8x8 Matrices)
 
 * Toffoli / CCX Gate - $Toffoli$
+
 
 More quantum gates can be created easily by defining it with the type:
 
