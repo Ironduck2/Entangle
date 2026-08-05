@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entangle — Quantum Composer</title>
+  <script src="https://unpkg.com/konva@9/konva.min.js"></script>
+  <script src="entangle.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #1e1e2e;
+      color: #cdd6f4;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    header {
+      background-color: #181825;
+      padding: 12px 24px;
+      border-bottom: 1px solid #313244;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .controls-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    h1 { margin: 0; font-size: 1.2rem; color: #cdd6f4; }
+    .qubit-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      color: #a6adc8;
+    }
+    .qubit-selector input {
+      width: 50px;
+      background: #313244;
+      border: 1px solid #45475a;
+      color: #cdd6f4;
+      padding: 4px 8px;
+      border-radius: 4px;
+      text-align: center;
+    }
+    .btn-run {
+      background-color: #a6e3a1;
+      color: #11111b;
+      border: none;
+      padding: 8px 18px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .btn-run:hover { background-color: #94e2d5; }
+    #app {
+      display: flex;
+      flex: 1;
+    }
+    #sidebar {
+      width: 220px;
+      background-color: #181825;
+      border-right: 1px solid #313244;
+      padding: 20px 15px;
+    }
+    .sidebar-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #a6adc8;
+      margin-bottom: 15px;
+    }
+    .palette {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .gate-item {
+      width: 55px;
+      height: 55px;
+      background-color: #89b4fa;
+      color: #11111b;
+      font-weight: bold;
+      font-size: 1.3rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      user-select: none;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    #canvas-container {
+      flex: 1;
+      background-color: #1e1e2e;
+      position: relative;
+    }
+    .help-text {
+      margin-top: 20px;
+      font-size: 0.8rem;
+      color: #6c7086;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="controls-left">
+      <h1>Entangle — Quantum Composer</h1>
+      <div class="qubit-selector">
+        <label for="numQubitsInput">Qubits:</label>
+        <input type="number" id="numQubitsInput" value="4" min="1" max="10">
+      </div>
+    </div>
+    <button class="btn-run" onclick="runSimulation()">▶ Simular Circuito</button>
+  </header>
+
+  <div id="app">
+    <div id="sidebar">
+      <div class="sidebar-title">Puertas Cuánticas</div>
+      <div class="palette">
+        <div class="gate-item" style="background-color: #89b4fa;" draggable="true" data-type="H">H</div>
+        <div class="gate-item" style="background-color: #f9e2af;" draggable="true" data-type="X">X</div>
+        <div class="gate-item" style="background-color: #f38ba8;" draggable="true" data-type="Y">Y</div>
+        <div class="gate-item" style="background-color: #cba6f7;" draggable="true" data-type="Z">Z</div>
+      </div>
+      <div class="help-text">
+        💡 <b>Tip:</b> Haz <i>doble clic</i> en una puerta dentro del lienzo para eliminarla.
+      </div>
+    </div>
+    <div id="canvas-container"></div>
+  </div>
+
+  <script>
+    let NUM_QUBITS = 4;
+    const NUM_STEPS = 10;
+    const START_X = 120;
+    const START_Y = 80;
+    const STEP_WIDTH = 70;
+    const QUBIT_HEIGHT = 70;
+    const GATE_SIZE = 46;
+
+    const container = document.getElementById('canvas-container');
+    const stage = new Konva.Stage({
+      container: 'canvas-container',
+      width: container.clientWidth,
+      height: container.clientHeight,
+    });
+
+    const layer = new Konva.Layer();
+    stage.add(layer);
+
+    let placedGates = [];
+
+    // Redibujar la rejilla según la cantidad de Qubits
+    function drawGrid() {
+      layer.destroyChildren();
+
+      for (let q = 0; q < NUM_QUBITS; q++) {
+        const y = START_Y + q * QUBIT_HEIGHT;
+
+        const label = new Konva.Text({
+          x: 40,
+          y: y - 10,
+          text: `q[${q}]`,
+          fontSize: 18,
+          fill: '#89b4fa',
+          fontFamily: 'monospace',
+          fontStyle: 'bold'
+        });
+        layer.add(label);
+
+        const line = new Konva.Line({
+          points: [START_X - 20, y, START_X + NUM_STEPS * STEP_WIDTH, y],
+          stroke: '#45475a',
+          strokeWidth: 2,
+          dash: [6, 4]
+        });
+        layer.add(line);
+      }
+
+      // Re-añadir las puertas existentes que sigan estando dentro del rango de qubits
+      placedGates = placedGates.filter(g => g.qubit < NUM_QUBITS);
+      placedGates.forEach(g => layer.add(g.group));
+
+      layer.draw();
+    }
+
+    drawGrid();
+
+    // Selector de Qubits
+    document.getElementById('numQubitsInput').addEventListener('change', (e) => {
+      let val = parseInt(e.target.value);
+      if (val < 1) val = 1;
+      if (val > 10) val = 10;
+      NUM_QUBITS = val;
+      drawGrid();
+    });
+
+    // Drag and Drop
+    let draggedType = null;
+    document.querySelectorAll('.gate-item').forEach(item => {
+      item.addEventListener('dragstart', (e) => {
+        draggedType = e.target.getAttribute('data-type');
+      });
+    });
+
+    const con = stage.container();
+    con.addEventListener('dragover', (e) => e.preventDefault());
+
+    con.addEventListener('drop', (e) => {
+      e.preventDefault();
+      stage.setPointersPositions(e);
+      const pos = stage.getPointerPosition();
+
+      const qubit = Math.round((pos.y - START_Y) / QUBIT_HEIGHT);
+      const step = Math.round((pos.x - START_X) / STEP_WIDTH);
+
+      if (qubit >= 0 && qubit < NUM_QUBITS && step >= 0 && step < NUM_STEPS) {
+        addGateToCanvas(draggedType, qubit, step);
+      }
+    });
+
+    function addGateToCanvas(type, qubit, step) {
+      const targetX = START_X + step * STEP_WIDTH;
+      const targetY = START_Y + qubit * QUBIT_HEIGHT;
+
+      const colors = { H: '#89b4fa', X: '#f9e2af', Y: '#f38ba8', Z: '#cba6f7' };
+
+      const group = new Konva.Group({
+        x: targetX,
+        y: targetY,
+        draggable: true
+      });
+
+      const rect = new Konva.Rect({
+        x: -GATE_SIZE / 2,
+        y: -GATE_SIZE / 2,
+        width: GATE_SIZE,
+        height: GATE_SIZE,
+        fill: colors[type] || '#89b4fa',
+        cornerRadius: 6,
+        shadowColor: 'black',
+        shadowBlur: 5,
+        shadowOpacity: 0.3
+      });
+
+      const text = new Konva.Text({
+        x: -GATE_SIZE / 2,
+        y: -GATE_SIZE / 4,
+        width: GATE_SIZE,
+        text: type,
+        fontSize: 20,
+        fontStyle: 'bold',
+        fill: '#11111b',
+        align: 'center'
+      });
+
+      group.add(rect);
+      group.add(text);
+      layer.add(group);
+
+      const gateData = { type, qubit, step, group };
+      placedGates.push(gateData);
+
+      // --- FUNCIONALIDAD BORRAR: Doble clic en la puerta ---
+      group.on('dblclick dbltap', () => {
+        group.destroy(); // Eliminar de la pantalla
+        placedGates = placedGates.filter(g => g !== gateData); // Eliminar de la lista
+        layer.draw();
+      });
+
+      // Snap al arrastrar dentro del lienzo
+      group.on('dragend', () => {
+        const newPos = group.position();
+        const newQubit = Math.max(0, Math.min(NUM_QUBITS - 1, Math.round((newPos.y - START_Y) / QUBIT_HEIGHT)));
+        const newStep = Math.max(0, Math.min(NUM_STEPS - 1, Math.round((newPos.x - START_X) / STEP_WIDTH)));
+
+        group.position({
+          x: START_X + newStep * STEP_WIDTH,
+          y: START_Y + newQubit * QUBIT_HEIGHT
+        });
+
+        gateData.qubit = newQubit;
+        gateData.step = newStep;
+        layer.draw();
+      });
+
+      layer.draw();
+    }
+
+    let entangleModule = null;
+
+    // Cargar el módulo C++ al abrir la página
+    createEntangleModule().then(Module => {
+      entangleModule = Module;
+      console.log("Módulo C++ (WebAssembly) cargado y listo.");
+    });
+
+    function runSimulation() {
+      if (!entangleModule) {
+        alert("El motor C++ aún se está cargando...");
+        return;
+      }
+
+      const circuitSequence = placedGates
+        .sort((a, b) => a.step - b.step)
+        .map(g => ({
+          gate: g.type,
+          targetQbit: g.qubit,
+          step: g.step
+        }));
+
+      const payload = {
+        amountQbits: NUM_QUBITS,
+        instructions: circuitSequence
+      };
+
+      const jsonString = JSON.stringify(payload);
+      
+      // ¡AQUÍ ESTÁ LA MAGIA! Llamamos a la función de C++ desde Javascript
+      const resultFromCpp = entangleModule.runSimulationFromWeb(jsonString);
+      
+      console.log("Respuesta del motor C++:", resultFromCpp);
+      alert("C++ dice: " + resultFromCpp);
+    }
+  </script>
+</body>
+</html>
