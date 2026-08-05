@@ -30,7 +30,7 @@ public:
         return qbitsList.size();
     }
 
-
+    // =========== APPLYING QUANTUM GATES ===========
     void applyGate(std::vector<std::vector<std::complex<double>>> gateMatrix, int targetQbit = 0) {
 
         size_t statesNum = qbitsList.size();
@@ -62,6 +62,7 @@ public:
         }
     }
 
+    // =========== APPLYING MULTI-QUBIT GATES ===========
     void applyMultiQubitGate(const vector<vector<complex<double>>>& gateMatrix, const vector<int>& targets) {
         int k = targets.size();
         size_t dim = 1ULL << k;
@@ -106,9 +107,37 @@ public:
             }
         }
     }
+
+    // =========== GROVER'S ALGORITHM OPTIMIZATIONS ===========
+    void applyOracle(int targetKey){
+        qbitsList[targetKey] *= -1.0;
+    }
+
+    void applyDiffusionOperator() {
+        size_t numStates = qbitsList.size();
+        std::complex<double> sum(0.0, 0.0);
     
-    void printQbits(int n) const {
+        for (size_t i = 0; i < numStates; ++i) {
+            sum += qbitsList[i];
+        }
+        
+        std::complex<double> mean = sum / static_cast<double>(numStates);
+        std::complex<double> two_times_mean = 2.0 * mean;
+        
+        for (size_t i = 0; i < numStates; ++i) {
+            qbitsList[i] = two_times_mean - qbitsList[i];
+        }
+    }
+    
+    void printQbits() const {
         for (int i = 0; i < qbitsList.size(); ++i) {
+            cout << qbitsList[i] << " ";
+        }
+        cout << endl;
+    } 
+
+    void printQbits(int n) const {
+        for (int i = 0; i < n; ++i) {
             cout << qbitsList[i] << " ";
         }
         cout << endl;
