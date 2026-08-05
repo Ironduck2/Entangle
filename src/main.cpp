@@ -1,5 +1,6 @@
 #include "QuantumComputer.hpp"
 #include "CondensedToNMatrix.hpp"
+#include "QGatesCollection.hpp"
 #include <chrono>
 #include <cmath>
 #include <iostream>
@@ -9,24 +10,13 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+using namespace QGates;
 using namespace std;
 using namespace std::chrono;
 
 void simpleTest();
 void timeTest();
 void groverAlgorithm();
-
-std::vector<std::vector<std::complex<double>>> QGateH = {
-    {1/sqrt(2), 1/sqrt(2)},
-    {1/sqrt(2), -1/sqrt(2)}
-};
-
-std::vector<std::vector<std::complex<double>>> CNOT = {
-    {1, 0, 0, 0},
-    {0, 1, 0, 0},
-    {0, 0, 0, 1},
-    {0, 0, 1, 0}
-};
 
 int main() {
     bool test = false;
@@ -54,7 +44,7 @@ void simpleTest(){
     // ======= code to test speed here =======
 
     for (int i = 0; i < numQbits; ++i) {
-        myQbits.applyGate(QGateH, i);
+        myQbits.applyGate(H, i);
     }
 
     // ======= code to test speed here =======
@@ -71,7 +61,7 @@ void timeTest(){
     QuantumComputer myQbits(numQbits);
 
     for (int i = 0; i < 10; ++i) {
-        myQbits.applyGate(QGateH, 10);
+        myQbits.applyGate(H, 10);
     }
 
     const int iterations = 100;
@@ -81,7 +71,7 @@ void timeTest(){
     for (int i = 0; i < iterations; ++i) {
         auto start = high_resolution_clock::now();
         
-        myQbits.applyGate(QGateH, 10);
+        myQbits.applyGate(H, 10);
         
         auto stop = high_resolution_clock::now();
         times.push_back(duration_cast<microseconds>(stop - start).count());
@@ -105,16 +95,17 @@ void timeTest(){
 }
 
 void groverAlgorithm() {
-    int numQbits = 16;
+    int numQbits = 16; // Not recommended for higher than 20 qbits as number of iterations will grow exponentially. 20 qbits will require 785 iterations, while 21 qbits will require 1110 iterations...
     int targetKey = 0;
-    int iterations = 201; // recomended number of iterations follows the formula: floor((pi/4) * sqrt(2^n)) where n is numQbits. 
+    int iterations = static_cast<int>((M_PI / 4) * std::sqrt(std::pow(2, numQbits))); // recommended number of iterations follows the formula: floor((pi/4) * sqrt(2^n)) where n is numQbits.
     cout << "Number of iterations for Grover's algorithm: " << iterations << endl;
 
     QuantumComputer myQbits(numQbits);
 
 
     for (int i = 0; i < numQbits; ++i) {
-        myQbits.applyGate(QGateH, i);
+
+        myQbits.applyGate(QGates::H, i);
     }
 
     auto start = high_resolution_clock::now();
