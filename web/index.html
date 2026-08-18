@@ -216,7 +216,7 @@
         return;
       }
 
-      //Aqui hacemos una fot de las piezas (puertas) ordenadas de izq a derecha prq el orden importa
+      //Aqui hacemos una foto de las piezas (puertas) ordenadas de izq a derecha prq el orden importa
       const circuitSequence = placedGates     
         .sort((a, b) => a.step - b.step)
         .map(g => ({ gate: g.type, targetQbit: g.qubit, step: g.step }));
