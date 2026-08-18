@@ -29,6 +29,11 @@ public:
         return qbitsList.size();
     }
 
+    // Como para obtener la lista de qbits ahora se ha puesto en privado, necesitamos un getter para poder acceder a esta
+    std::vector<complex<double>> getQbitsList() const {
+        return qbitsList;
+    }
+
 
     void applyGate(std::vector<std::vector<std::complex<double>>> gateMatrix, int targetQbit = 0) {
 
