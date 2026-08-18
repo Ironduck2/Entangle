@@ -61,7 +61,6 @@ The quantum gates already contained in this simulation are:
 
 * Toffoli / CCX Gate - $Toffoli$
 
-
 More quantum gates can be created easily by defining it with the type:
 
 ```cpp
