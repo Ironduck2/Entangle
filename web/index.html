@@ -5,11 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Entangle — Quantum Composer</title>
   <script src="https://unpkg.com/konva@9/konva.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
-  <!-- Comando para cargar el C++ dentro de la web -->
+  <!-- Comando para cargar el C++ dentro de la web, entangle.js seria como el C++ traducido con las funciones que se necesitan para ejec el prog -->
   <script src="entangle.js"></script>
-
-  
   
   <!-- Codigo para el diseño de la web, cada parte (body, header...) tiene sus propias caracteristicas -->
   <style>
@@ -70,16 +69,32 @@
     <div id="sidebar">
       <div class="sidebar-title">Puertas Cuánticas</div>
       <div class="palette">
+        <!-- 1- Puertas individuales de 1, he añadido las 3 mas q has hecho (al final tmb he puesto la identidad) -->
         <div class="gate-item" style="background-color: #89b4fa;" draggable="true" data-type="H">H</div>
         <div class="gate-item" style="background-color: #f9e2af;" draggable="true" data-type="X">X</div>
         <div class="gate-item" style="background-color: #f38ba8;" draggable="true" data-type="Y">Y</div>
         <div class="gate-item" style="background-color: #cba6f7;" draggable="true" data-type="Z">Z</div>
+        <div class="gate-item" style="background-color: #a6e3a1;" draggable="true" data-type="I">I</div>
+        <div class="gate-item" style="background-color: #fab387;" draggable="true" data-type="S">S</div>
+        <div class="gate-item" style="background-color: #eba0ac;" draggable="true" data-type="T">T</div>
+        
+        <!-- Multi Puertas -->
+        <div class="gate-item" style="background-color: #94e2d5; font-size: 0.9rem;" draggable="true" data-type="CNOT">CX</div>
+        <div class="gate-item" style="background-color: #74c7ec; font-size: 0.9rem;" draggable="true" data-type="CZ">CZ</div>
+        <div class="gate-item" style="background-color: #f5c2e7; font-size: 0.7rem;" draggable="true" data-type="SWAP">SWP</div>
+        <div class="gate-item" style="background-color: #f2cdcd; font-size: 0.8rem;" draggable="true" data-type="CCX">CCX</div>
       </div>
       <div class="help-text">
         💡 <b>Tip:</b> Haz <i>doble clic</i> en una puerta cuántica dentro del lienzo para eliminarla.
       </div>
     </div>
     <div id="canvas-container"></div>
+    
+    <div id="results-panel" style="padding: 20px; background-color: #181825; border-top: 1px solid #313244; height: 250px;">
+  <h3 style="margin-top: 0; color: #a6e3a1; font-size: 1rem;">Resultados de Probabilidad</h3>
+  <canvas id="probabilityChart"></canvas>
+  </div>
+    
   </div>
 
 
@@ -170,7 +185,13 @@
     });
 
     function addGateToCanvas(type, qubit, step) {
-      const colors = { H: '#89b4fa', X: '#f9e2af', Y: '#f38ba8', Z: '#cba6f7' };
+      // Diccionario de colores
+      const colors = { 
+        H: '#89b4fa', X: '#f9e2af', Y: '#f38ba8', Z: '#cba6f7',
+        I: '#a6e3a1', S: '#fab387', T: '#eba0ac',
+        CNOT: '#94e2d5', CZ: '#74c7ec', SWAP: '#f5c2e7', CCX: '#f2cdcd'
+      };
+      
       const group = new Konva.Group({ x: START_X + step * STEP_WIDTH, y: START_Y + qubit * QUBIT_HEIGHT, draggable: true });
 
       group.add(new Konva.Rect({
@@ -209,35 +230,75 @@
 
 
     
-    // --- CONEXIÓN CON C++ ---
-    function runSimulation() {
-      if (!entangleModule) {
-        alert("El motor C++ aún se está cargando o hubo un error. Revisa la consola (F12).");
-        return;
-      }
+    // --- CONEXIÓN CON C++ ---  
+    let myChart = null;
+    // iniciamos la simulacion (boton de simular circuito)
+function runSimulation() {
+  if (!entangleModule) {
+    alert("El motor C++ aún se está cargando. Revisa la consola.");
+    return;
+  }
 
-      //Aqui hacemos una foto de las piezas (puertas) ordenadas de izq a derecha prq el orden importa
-      const circuitSequence = placedGates     
-        .sort((a, b) => a.step - b.step)
-        .map(g => ({ gate: g.type, targetQbit: g.qubit, step: g.step }));
+  // 1. Preparamos las instrucciones
+  const circuitSequence = placedGates
+    .sort((a, b) => a.step - b.step)
+    .map(g => ({ gate: g.type, targetQbit: g.qubit, step: g.step }));
 
-      // Crea el JSON como lo quiere recibir el C++ para poder ejecutar lo que quiera
-      const payload = { amountQbits: NUM_QUBITS, instructions: circuitSequence };
-      const jsonString = JSON.stringify(payload);
-      
-      console.log("Enviando a C++:", jsonString);
-      
+  const payload = { amountQbits: NUM_QUBITS, instructions: circuitSequence };
+  const jsonString = JSON.stringify(payload);
 
-      // Hacemos que desde la web, mediante webassembly se le envie al C++
-      try {
-        const resultFromCpp = entangleModule.runSimulationFromWeb(jsonString);
-        console.log("Respuesta de C++:", JSON.parse(resultFromCpp));
-        alert("¡Éxito! C++ devolvió: \n" + resultFromCpp);
-      } catch (error) {
-        console.error("Error ejecutando C++:", error);
-        alert("Error en la ejecución de C++. Revisa la consola.");
-      }
+  try {
+    // 2. Ejecutamos la simulacion del back-end, es decir, el C++
+    const resultFromCpp = entangleModule.runSimulationFromWeb(jsonString);
+    const parsedResult = JSON.parse(resultFromCpp);
+    const stateVector = parsedResult.stateVector;
+
+    // 3. Generar las etiquetas de los estados base (|00>, |01>, etc.) y calcular probabilidades
+    const labels = [];
+    const probabilities = [];
+    
+    stateVector.forEach((amp, index) => {
+      // Convertir el índice a binario con ceros a la izquierda
+      const binaryState = index.toString(2).padStart(NUM_QUBITS, '0');
+      labels.push(`|${binaryState}⟩`);
+      // Probabilidad se calcula al poner la amplitud al cuadrago (|A|^2) (lo que me dijiste en la cafeteria)
+      probabilities.push(Math.pow(amp, 2));
+    });
+
+    // 4. Dibujar o actualizar el gráfico con Chart.js, que es la libreria q hemos instalado para diujar
+    const ctx = document.getElementById('probabilityChart').getContext('2d');
+    
+    if (myChart) {
+      myChart.destroy(); // Para que se limpie el grafico de antes usarlo otra vez
     }
+
+    myChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Probabilidad de Medición',
+          data: probabilities,
+          backgroundColor: '#89b4fa',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, max: 1, grid: { color: '#313244' }, ticks: { color: '#cdd6f4' } },
+          x: { grid: { display: false }, ticks: { color: '#cdd6f4' } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+
+  } catch (error) {
+    console.error("Error ejecutando C++:", error);
+    alert("Error en la simulación. Revisa la consola.");
+  }
+}
   </script>
 </body>
 </html>

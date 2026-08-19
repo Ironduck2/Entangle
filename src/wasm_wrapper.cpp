@@ -4,50 +4,45 @@
 #include <complex>
 #include "json.hpp"                 
 #include "QuantumComputer.hpp"      
+#include "QGatesCollection.hpp"  // <-- Añadimos el catalogo de tu socio
 
 using json = nlohmann::json;
 
 std::string runSimulationFromWeb(std::string json_input) {
-    // 1. Leer el JSON que nos envía la web
+    // 1. Leer el JSON que nos envia la web
     json payload = json::parse(json_input);
     int amountQbits = payload["amountQbits"];
     
-    // 2. Inicializar el simulador cuántico con la cantidad de Qubits elegida
+    // 2. Inicializar el simulador cuantico
     QuantumComputer myQbits(amountQbits);
 
-    // 3. Definir las matrices de las puertas lógicas básicas
-    std::vector<std::vector<std::complex<double>>> GateH = {
-        {1/sqrt(2), 1/sqrt(2)},
-        {1/sqrt(2), -1/sqrt(2)}
-    };
-    std::vector<std::vector<std::complex<double>>> GateX = {
-        {0, 1},
-        {1, 0}
-    };
-    std::vector<std::vector<std::complex<double>>> GateZ = {
-        {1, 0},
-        {0, -1}
-    };
-
-    // 4. Recorrer las instrucciones y aplicar las puertas
+    // 3. Recorrer las instrucciones y aplicar las puertas del catalogo QGates
     for (auto& inst : payload["instructions"]) {
         std::string gateName = inst["gate"];
         int target = inst["targetQbit"];
         
-        if (gateName == "H") myQbits.applyGate(GateH, target);
-        else if (gateName == "X") myQbits.applyGate(GateX, target);
-        else if (gateName == "Z") myQbits.applyGate(GateZ, target);
+        // Puertas de 1 Qubit
+        if (gateName == "I") myQbits.applyGate(QGates::I, target);
+        else if (gateName == "H") myQbits.applyGate(QGates::H, target);
+        else if (gateName == "X") myQbits.applyGate(QGates::X, target);
+        else if (gateName == "Y") myQbits.applyGate(QGates::Y, target);
+        else if (gateName == "Z") myQbits.applyGate(QGates::Z, target);
+        else if (gateName == "S") myQbits.applyGate(QGates::S, target);
+        else if (gateName == "T") myQbits.applyGate(QGates::T, target);
+        
+        // Las puertas multiples (CNOT, CZ, SWAP, CCX) las dejamos preparadas 
+        // para cuando la web sepa enviar dos 'targets' en el JSON.
     }
 
-    // 5. Obtener el resultado de la simulación
+    // 4. Obtener el resultado de la simulacion
     std::vector<std::complex<double>> finalState = myQbits.getQbitsList();
 
-    // 6. Empaquetar el resultado para la web
+    // 5. Empaquetar el resultado para la web
     json resultJson;
     resultJson["status"] = "success";
     resultJson["stateVector"] = json::array();
 
-    // Guardamos la parte "real" de las probabilidades
+    // Guardamos la parte "real" de las probabilidades por ahora
     for (const auto& amp : finalState) {
         resultJson["stateVector"].push_back(amp.real());
     }
