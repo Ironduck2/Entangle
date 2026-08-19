@@ -10,6 +10,9 @@
   <!-- Comando para cargar el C++ dentro de la web, entangle.js seria como el C++ traducido con las funciones que se necesitan para ejec el prog -->
   <script src="entangle.js"></script>
   
+
+
+
   <!-- Codigo para el diseño de la web, cada parte (body, header...) tiene sus propias caracteristicas -->
   <style>
     * { box-sizing: border-box; }
@@ -64,11 +67,15 @@
   </header>
 
 
+
+
+
   <!-- Botones de las puertas logicas aqui -->
   <div id="app">
     <div id="sidebar">
       <div class="sidebar-title">Puertas Cuánticas</div>
       <div class="palette">
+
         <!-- 1- Puertas individuales de 1, he añadido las 3 mas q has hecho (al final tmb he puesto la identidad) -->
         <div class="gate-item" style="background-color: #89b4fa;" draggable="true" data-type="H">H</div>
         <div class="gate-item" style="background-color: #f9e2af;" draggable="true" data-type="X">X</div>
@@ -78,7 +85,7 @@
         <div class="gate-item" style="background-color: #fab387;" draggable="true" data-type="S">S</div>
         <div class="gate-item" style="background-color: #eba0ac;" draggable="true" data-type="T">T</div>
         
-        <!-- Multi Puertas -->
+        <!-- Multi Puertas, para cambiar color y nombre -->
         <div class="gate-item" style="background-color: #94e2d5; font-size: 0.9rem;" draggable="true" data-type="CNOT">CX</div>
         <div class="gate-item" style="background-color: #74c7ec; font-size: 0.9rem;" draggable="true" data-type="CZ">CZ</div>
         <div class="gate-item" style="background-color: #f5c2e7; font-size: 0.7rem;" draggable="true" data-type="SWAP">SWP</div>
@@ -89,9 +96,10 @@
       </div>
     </div>
     <div id="canvas-container"></div>
-    
-    <div id="results-panel" style="padding: 20px; background-color: #181825; border-top: 1px solid #313244; height: 250px;">
-  <h3 style="margin-top: 0; color: #a6e3a1; font-size: 1rem;">Resultados de Probabilidad</h3>
+
+    <!-- Aqui modificas el panel de resultados -->
+    <div id="results-panel" style="padding: 20px; background-color: #181825; border-top: 1px solid #313244; height: 350px; width: 30%;">
+  <h3 style="margin-top: 0; color: #a6e3a1; font-size: 1.1rem;">Resultados de Probabilidad</h3>
   <canvas id="probabilityChart"></canvas>
   </div>
     
@@ -100,14 +108,15 @@
 
 
 
+
   <script>
-    // --- INICIALIZACIÓN DEL MOTOR C++ ---
+    // --- INICIALIZACIÓN DEL MOTOR C++, esta conectado con el entangle.js que es el "codigo C++ traducido para q la web lo pueda entender" ---
     let entangleModule = null;
 
     if (typeof createEntangleModule === 'function') {
       createEntangleModule().then(Module => {
         entangleModule = Module;
-        console.log("✅ Módulo C++ (WebAssembly) cargado y listo para simular.");
+        console.log("✅ Módulo C++ (en WebAssembly) cargado y listo para simular.");
       });
     } else {
       console.error("❌ No se encontró createEntangleModule. Asegúrate de que emcc compiló correctamente entangle.js");
@@ -184,16 +193,67 @@
       }
     });
 
+
+
+
     function addGateToCanvas(type, qubit, step) {
-      // Diccionario de colores
       const colors = { 
         H: '#89b4fa', X: '#f9e2af', Y: '#f38ba8', Z: '#cba6f7',
         I: '#a6e3a1', S: '#fab387', T: '#eba0ac',
-        CNOT: '#94e2d5', CZ: '#74c7ec', SWAP: '#f5c2e7', CCX: '#f2cdcd'
+        CNOT: '#94e2d5', CX: '#94e2d5', CZ: '#74c7ec', SWAP: '#f5c2e7', CCX: '#f2cdcd'
       };
-      
+
+      let controlQbit = null;
+      let control2Qbit = null;
+
+      // 1. Cuando pones una multigate, salta alarma preguntando donde quieres poner la union de la puerta
+      if (['CNOT', 'CX', 'CZ', 'SWAP', 'SWP'].includes(type)) {
+        let ans = prompt(`Has soltado un ${type} en el q[${qubit}].\n¿Cuál es el Qubit de CONTROL? (Escribe un número del 0 al ${NUM_QUBITS - 1})`);
+        if (ans === null || ans === "") return; // Si cancela, no dibuja nada
+        controlQbit = parseInt(ans);
+        if (isNaN(controlQbit) || controlQbit < 0 || controlQbit >= NUM_QUBITS || controlQbit === qubit) {
+          alert("Qubit de control inválido. Debe ser un número distinto al objetivo.");
+          return;
+        }
+      } else if (type === 'CCX') {
+        let ans1 = prompt(`Has soltado un CCX (Toffoli) en el q[${qubit}].\n¿Cuál es el PRIMER control?`);
+        let ans2 = prompt(`¿Cuál es el SEGUNDO control?`);
+        if (!ans1 || !ans2) return;
+        controlQbit = parseInt(ans1);
+        control2Qbit = parseInt(ans2);
+      }
+
       const group = new Konva.Group({ x: START_X + step * STEP_WIDTH, y: START_Y + qubit * QUBIT_HEIGHT, draggable: true });
 
+
+
+      // 2. Dibujar las lineas verticales y los puntos de control de las multipuertas
+      if (controlQbit !== null) {
+        // Calcular distancia visual desde el objetivo al control
+        const controlYOffset = (controlQbit - qubit) * QUBIT_HEIGHT;
+        
+        // Línea vertical
+        group.add(new Konva.Line({
+          points: [0, 0, 0, controlYOffset], stroke: colors[type], strokeWidth: 3
+        }));
+        // Punto en el control
+        group.add(new Konva.Circle({
+          x: 0, y: controlYOffset, radius: 6, fill: colors[type]
+        }));
+
+        // Si es Toffoli (CCX), dibujar el segundo control (es una puerta cuantica con 3 uniones)
+        if (control2Qbit !== null) {
+          const control2YOffset = (control2Qbit - qubit) * QUBIT_HEIGHT;
+          group.add(new Konva.Line({
+            points: [0, 0, 0, control2YOffset], stroke: colors[type], strokeWidth: 3
+          }));
+          group.add(new Konva.Circle({
+            x: 0, y: control2YOffset, radius: 6, fill: colors[type]
+          }));
+        }
+      }
+
+      // 3. Dibujar la caja de la puerta (Objetivo)
       group.add(new Konva.Rect({
         x: -GATE_SIZE / 2, y: -GATE_SIZE / 2, width: GATE_SIZE, height: GATE_SIZE,
         fill: colors[type] || '#89b4fa', cornerRadius: 6, shadowColor: 'black', shadowBlur: 5, shadowOpacity: 0.3
@@ -205,10 +265,11 @@
       }));
 
       layer.add(group);
-      const gateData = { type, qubit, step, group };
+      
+      // Guardar toda la info para enviarla luego al C++
+      const gateData = { type, qubit, step, group, controlQbit, control2Qbit };
       placedGates.push(gateData);
 
-      // Funcionalidad de Java para con un doble click, borrar un objeto
       group.on('dblclick dbltap', () => {
         group.destroy();
         placedGates = placedGates.filter(g => g !== gateData);
@@ -240,12 +301,27 @@ function runSimulation() {
   }
 
   // 1. Preparamos las instrucciones
-  const circuitSequence = placedGates
-    .sort((a, b) => a.step - b.step)
-    .map(g => ({ gate: g.type, targetQbit: g.qubit, step: g.step }));
+  
+  // 1. Preparar las instrucciones
+      const circuitSequence = placedGates
+        .sort((a, b) => a.step - b.step)
+        .map(g => {
+          let inst = { gate: g.type, targetQbit: g.qubit, step: g.step };
+          
+          if (g.controlQbit !== null) {
+            inst.controlQbit = g.controlQbit;
+          }
+          if (g.control2Qbit !== null) {
+            inst.control1 = g.controlQbit;
+            inst.control2 = g.control2Qbit;
+          }
+          return inst;
+        });
 
-  const payload = { amountQbits: NUM_QUBITS, instructions: circuitSequence };
-  const jsonString = JSON.stringify(payload);
+
+    const payload = { amountQbits: NUM_QUBITS, instructions: circuitSequence };
+    const jsonString = JSON.stringify(payload);
+
 
   try {
     // 2. Ejecutamos la simulacion del back-end, es decir, el C++
