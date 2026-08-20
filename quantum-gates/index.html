@@ -406,14 +406,16 @@ $$
 <p>If we set qubit 0 as the control and qubit 2 as the target in a 3 qubit system there is no string of tensor products that would lead us to the desired matrix that would define this transformation. Because a CNOT gate is a single <span class="arithmatex">\(4 \times 4\)</span> matrix spanning two qubits, it's not possible to "split" it in half to tensor an Identity matrix <span class="arithmatex">\(I\)</span> into the middle for qubit 1.</p>
 <p>To force full matrix multiplication to work for non-adjacent qubits, one must either sandwich the gate between <strong>SWAP gates</strong> to temporarily bring the qubits next to each other, or decompose the CNOT gate into a sum of projector tensor products.</p>
 <p>While these approaches clarify the linear algebra behind these operations, in our objective to build an efficient quantum computer simulator creating matrices of this magnitude, that grow exponentially with the amount of qubits we are working on, this creates massive bottlenecks in performance and memory. Linear algebra is the math that describes these quantum computer operations, but to simulate these operations faster, there is another method, with <strong>bitwise statevector operations</strong>.</p>
-<p>A summary on Quantum gates:
-- There are 4 main quantum gates that can be applied to one qubit
-- Applying quantum gates is the same as matrix multiplication with the state vector
-- Tensor products are used to scale matrices while conserving the transformations they describe
-- Following an specific order of tensor products is necessary to apply quantum gates to specific qubits
-- This process does not work with multi-qubits quantum gates that are applied to non-consecutive qubits. Although there are solutions to solve this
-- Following the math that linear algebra describes with quantum computer operations helps with a better understanding of how it works. But for the simulator to be efficient another method has to be used
-- For optimising the use of quantum gates, Entangle uses bitwise statevector operations</p>
+<p>A summary on Quantum gates:</p>
+<ul>
+<li>There are 4 main quantum gates that can be applied to one qubit</li>
+<li>Applying quantum gates is the same as matrix multiplication with the state vector</li>
+<li>Tensor products are used to scale matrices while conserving the transformations they describe</li>
+<li>Following an specific order of tensor products is necessary to apply quantum gates to specific qubits</li>
+<li>This process does not work with multi-qubits quantum gates that are applied to non-consecutive qubits. Although there are solutions to solve this</li>
+<li>Following the math that linear algebra describes with quantum computer operations helps with a better understanding of how it works. But for the simulator to be efficient another method has to be used</li>
+<li>For optimising the use of quantum gates, Entangle uses bitwise statevector operations</li>
+</ul>
 
 
 
