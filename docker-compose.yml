@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  entangle:
+    build: .
+    container_name: entangle_simulador
+    ports:
+      - "8083:80"
+    restart: unless-stopped
