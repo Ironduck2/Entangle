@@ -1,0 +1,17 @@
+site_name: Entangle
+site_description: A quantum computer simulator
+theme:
+  name: readthedocs
+  palette:
+    scheme: slate
+    primary: indigo
+  features:
+    - content.code.copy
+    - navigation.indexes
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js
