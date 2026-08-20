@@ -1,17 +1,53 @@
 site_name: Entangle
 site_description: A quantum computer simulator
 theme:
-  name: readthedocs
+  name: material
+  
+  # Color Palette & Light/Dark Mode Switcher
   palette:
-    scheme: slate
-    primary: indigo
-  features:
-    - content.code.copy
-    - navigation.indexes
+    # Light Mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-6
+        name: Switch to dark mode
+
+    # Dark Mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-3
+        name: Switch to light mode
+
+
+nav:
+  - Home: index.md
+  - The QuantumComputer Class: quantum-computer.md
+  - Quantum Gates: quantum-gates.md
+  - Bitwise Operations: bitwise-operations.md
+
+# plugins:
+#   - search
+#   - i18n:
+#       default_language: en
+#       languages:
+#         - locale: en
+#           name: English
+#           default: true
+#           build: true
+#         - locale: es
+#           name: Español
+#           build: true
+
 
 markdown_extensions:
-  - attr_list
-  - md_in_html
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
 
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js
