@@ -2,7 +2,7 @@
 
 An accessible quantum computing simulator for building circuits, applying logic gates, and exploring multi-qubit states.
 
-A documentation of the code can be found [here] (https://ironduck2.github.io/Entangle/)
+A documentation of the code can be found [here](https://ironduck2.github.io/Entangle/)
 
 ## Prerequisites
 
