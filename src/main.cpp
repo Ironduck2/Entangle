@@ -1,5 +1,4 @@
 #include "QuantumComputer.hpp"
-#include "CondensedToNMatrix.hpp"
 #include "QGatesCollection.hpp"
 #include <chrono>
 #include <cmath>
@@ -19,6 +18,8 @@ void timeTest();
 void groverAlgorithm();
 
 int main() {
+
+    //set one of the variables true to test a different function. If both are false the simple test is done. It can be usefull to individually try the different gates
     bool test = false;
     bool grover = true;
 
@@ -43,6 +44,7 @@ void simpleTest(){
 
     // ======= code to test speed here =======
 
+    // Apply Hadamard gate to all qubits
     for (int i = 0; i < numQbits; ++i) {
         myQbits.applyGate(H, i);
     }
@@ -70,8 +72,12 @@ void timeTest(){
 
     for (int i = 0; i < iterations; ++i) {
         auto start = high_resolution_clock::now();
+
+        // ======= code to test speed here =======
         
         myQbits.applyGate(H, 10);
+        
+        // ======= code to test speed here =======
         
         auto stop = high_resolution_clock::now();
         times.push_back(duration_cast<microseconds>(stop - start).count());

@@ -11,6 +11,7 @@ An accessible quantum computing simulator for building circuits, applying logic 
 **Entangle** is a high-performance quantum computer simulator written in C++. It simulates multi-qubit statevectors and calculates the probabilities of applying various quantum gates, utilizing bitwise operations to optimize memory usage and performance.
 
 ### Key Features
+
 * **Bitwise Statevector Optimization:** Fast gate execution avoiding massive tensor-product matrix bottlenecks.
 * **Multi-Qubit Support:** Full support for 1-qubit, 2-qubit, and 3-qubit gates, with custom gate definition capabilities.
 * **Quantum Algorithms:** Implements famous quantum algorithms such as **Grover's Search**.

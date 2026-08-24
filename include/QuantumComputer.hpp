@@ -1,7 +1,6 @@
 #ifndef QuantumComputer_HH
 #define QuantumComputer_HH
 
-#include "CondensedToNMatrix.hpp"
 #include <vector>
 #include <iostream>
 #include <complex>
@@ -30,7 +29,6 @@ public:
         return qubitsList.size();
     }
 
-    // getter de la lista prq la tienes puesto en privado y sino no puedo acceder desde el wasm_wrapper
     std::vector<std::complex<double>> getQbitsList() const {
         return qubitsList;
     }

@@ -43,7 +43,6 @@ nav:
 #           name: Español
 #           build: true
 
-
 markdown_extensions:
   - pymdownx.superfences
   - pymdownx.arithmatex:

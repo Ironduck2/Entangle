@@ -3,6 +3,9 @@
 **Entangle** is a quantum computer simulator that can calculate the probabilities of applying a variety of quantum gates to a state vector that represents the qubits in a quantum computer.
 
 This page main objective is to explain the capabilities of this project and to explain how the code works.
+
+You can find the live demo of the project here: [Launch Quantum Simulator](https://ironduck2.github.io/Entangle/simulator/)
+
 ## About us
 
 Entangle is a quantum computer simulator build by:
