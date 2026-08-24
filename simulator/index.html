@@ -334,11 +334,14 @@ function runSimulation() {
     const probabilities = [];
     
     stateVector.forEach((amp, index) => {
-      // Convertir el índice a binario con ceros a la izquierda
       const binaryState = index.toString(2).padStart(NUM_QUBITS, '0');
       labels.push(`|${binaryState}⟩`);
-      // Probabilidad se calcula al poner la amplitud al cuadrago (|A|^2) (lo que me dijiste en la cafeteria)
-      probabilities.push(Math.pow(amp, 2));
+      
+      const real = amp[0];
+      const imag = amp[1];
+      const probability = (real * real) + (imag * imag);
+      
+      probabilities.push(probability);
     });
 
     // 4. Dibujar o actualizar el gráfico con Chart.js, que es la libreria q hemos instalado para diujar
