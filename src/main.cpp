@@ -21,7 +21,7 @@ int main() {
 
     //set one of the variables true to test a different function. If both are false the simple test is done. It can be usefull to individually try the different gates
     bool test = false;
-    bool grover = true;
+    bool grover = false;
 
     if (!test && !grover) {
         simpleTest();
@@ -37,7 +37,7 @@ int main() {
 }
 
 void simpleTest(){
-    int numQbits = 20;
+    int numQbits = 5;
     QuantumComputer myQbits(numQbits);
 
     auto start = high_resolution_clock::now();
@@ -45,9 +45,9 @@ void simpleTest(){
     // ======= code to test speed here =======
 
     // Apply Hadamard gate to all qubits
-    for (int i = 0; i < numQbits; ++i) {
-        myQbits.applyGate(H, i);
-    }
+
+    myQbits.applyGate(H, 1);
+    myQbits.applyGate(S, 1);
 
     // ======= code to test speed here =======
 

@@ -131,6 +131,12 @@ public:
             qubitsList[i] = two_times_mean - qubitsList[i];
         }
     }
+
+    void reset() {
+        std::fill(qubitsList.begin(), qubitsList.end(), std::complex<double>(0.0, 0.0));
+        
+        qubitsList.front() = std::complex<double>(1.0, 0.0);
+    }
     
     void printQbits() const {
         for (int i = 0; i < qubitsList.size(); ++i) {

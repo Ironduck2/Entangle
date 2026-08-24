@@ -116,10 +116,10 @@
     if (typeof createEntangleModule === 'function') {
       createEntangleModule().then(Module => {
         entangleModule = Module;
-        console.log("✅ Módulo C++ (en WebAssembly) cargado y listo para simular.");
+        console.log("Módulo C++ (en WebAssembly) cargado y listo para simular.");
       });
     } else {
-      console.error("❌ No se encontró createEntangleModule. Asegúrate de que emcc compiló correctamente entangle.js");
+      console.error("No se encontró createEntangleModule. Asegúrate de que emcc compiló correctamente entangle.js");
     }
 
 
@@ -280,8 +280,25 @@
         const newPos = group.position();
         const newQubit = Math.max(0, Math.min(NUM_QUBITS - 1, Math.round((newPos.y - START_Y) / QUBIT_HEIGHT)));
         const newStep = Math.max(0, Math.min(NUM_STEPS - 1, Math.round((newPos.x - START_X) / STEP_WIDTH)));
+        
+        // --- 1. Calculate how much the gate moved vertically ---
+        const qubitShift = newQubit - gateData.qubit;
+
+        // Snap the visual group into the grid
         group.position({ x: START_X + newStep * STEP_WIDTH, y: START_Y + newQubit * QUBIT_HEIGHT });
-        gateData.qubit = newQubit; gateData.step = newStep;
+        
+        // --- 2. Update the target qubit and time step ---
+        gateData.qubit = newQubit; 
+        gateData.step = newStep;
+
+        // --- 3. Shift the control qubits by the exact same amount ---
+        if (gateData.controlQbit !== null) {
+            gateData.controlQbit += qubitShift;
+        }
+        if (gateData.control2Qbit !== null) {
+            gateData.control2Qbit += qubitShift;
+        }
+
         layer.draw();
       });
       layer.draw();
@@ -334,11 +351,14 @@ function runSimulation() {
     const probabilities = [];
     
     stateVector.forEach((amp, index) => {
-      // Convertir el índice a binario con ceros a la izquierda
       const binaryState = index.toString(2).padStart(NUM_QUBITS, '0');
       labels.push(`|${binaryState}⟩`);
-      // Probabilidad se calcula al poner la amplitud al cuadrago (|A|^2) (lo que me dijiste en la cafeteria)
-      probabilities.push(Math.pow(amp, 2));
+      
+      const real = amp[0];
+      const imag = amp[1];
+      const probability = (real * real) + (imag * imag);
+      
+      probabilities.push(probability);
     });
 
     // 4. Dibujar o actualizar el gráfico con Chart.js, que es la libreria q hemos instalado para diujar

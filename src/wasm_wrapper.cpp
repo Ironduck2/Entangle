@@ -15,6 +15,7 @@ std::string runSimulationFromWeb(std::string json_input) {
     
     // 2. Inicializar el simulador cuántico
     QuantumComputer myQbits(amountQbits);
+    myQbits.reset();
 
     // 3. Recorrer las instrucciones
     for (auto& inst : payload["instructions"]) {
@@ -64,7 +65,7 @@ std::string runSimulationFromWeb(std::string json_input) {
     resultJson["stateVector"] = json::array();
 
     for (const auto& amp : finalState) {
-        resultJson["stateVector"].push_back(amp.real());
+        resultJson["stateVector"].push_back({amp.real(), amp.imag()});
     }
 
     return resultJson.dump();
