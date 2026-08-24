@@ -2,17 +2,59 @@
 
 An accessible quantum computing simulator for building circuits, applying logic gates, and exploring multi-qubit states.
 
-A documentation of the code can be found [here](https://ironduck2.github.io/Entangle/)
+* **Live Demo:** [Launch Quantum Simulator](https://ironduck2.github.io/Entangle/simulator/)
+* **Documentation:** [Entangle Docs Portal](https://ironduck2.github.io/Entangle/)
+---
 
-## Prerequisites
+## Overview
 
-Before building the project, ensure you have the following installed:
+**Entangle** is a high-performance quantum computer simulator written in C++. It simulates multi-qubit statevectors and calculates the probabilities of applying various quantum gates, utilizing bitwise operations to optimize memory usage and performance.
 
-* **C++ Compiler** with C++17 support (GCC, Clang, or MSVC)
+### Key Features
+* **Bitwise Statevector Optimization:** Fast gate execution avoiding massive tensor-product matrix bottlenecks.
+* **Multi-Qubit Support:** Full support for 1-qubit, 2-qubit, and 3-qubit gates, with custom gate definition capabilities.
+* **Quantum Algorithms:** Implements famous quantum algorithms such as **Grover's Search**.
+
+---
+
+## Collection of Quantum Gates
+
+The simulator natively supports the following quantum gates:
+
+| Qubits | Gate Name | Symbol | Matrix Size |
+| :---: | :--- | :---: | :---: |
+| **1-Qubit** | Identity, Pauli-X, Pauli-Y, Pauli-Z | `I`, `X`, `Y`, `Z` | $2 \times 2$ |
+| **1-Qubit** | Hadamard, S Gate, T Gate | `H`, `S`, `T` | $2 \times 2$ |
+| **2-Qubit** | CNOT / CX, CZ, SWAP | `CNOT`, `CZ`, `SWAP`| $4 \times 4$ |
+| **3-Qubit** | Toffoli / CCX | `Toffoli` | $8 \times 8$ |
+
+Custom gates can easily be defined using standard complex matrices:
+
+```cpp
+std::vector<std::vector<std::complex<double>>>
+```
+
+## Featured Algorithms: Grover's Search
+
+The objective of Grover's algorithm is to find the unique input $x_0$ to a black-box function $f(x)$ by trial and error in $O(\sqrt{N})$ time.
+
+To achieve the optimal probability of success, the quantum oracle and diffusion operator are iterated $R$ times:
+
+$$R \approx \frac{\pi}{4} \sqrt{2^n}$$
+
+Where $n$ represents the total number of simulated qubits.
+
+---
+
+## Building and Running
+
+### Prerequisites
+Ensure you have the following installed before building:
+* **C++ Compiler** with C++17 support (`GCC`, `Clang`, or `MSVC`)
 * **CMake** (v3.15 or higher recommended)
 * **Git**
 
-## Running the Project
+### Compilation Steps
 
 1. **Configure CMake:**
 
@@ -33,40 +75,8 @@ Before building the project, ensure you have the following installed:
    ./Entangle
    ```
 
-## Grover's algorithm
 
-The objective of Grover's algorithm can be simply described as finding the solution of any function f(x) by trial and error in $O(\sqrt{x})$ time.
+## Documentation
+For an in-depth breakdown of the linear algebra, bitwise statevector optimizations, and C++ class architectures, visit the **[Entangle Documentation Site](https://ironduck2.github.io/Entangle/)**.
 
-To get the optimal result the algorithm has to be run a total of $R_M \approx \frac{\pi}{4} \sqrt{2^n}$ times. Where n is the amount of qbits simulated.
-
-## Collection of quantum gates
-
-The quantum gates already contained in this simulation are:
-
-### 1-Qubit Gates (2x2 Matrices)
-
-* Identity Gate - $I$
-* Pauli-X Gate - $X$
-* Pauli-Y Gate - $Y$
-* Pauli-Z Gate  - $Z$
-* Hadamard Gate - $H$
-* S Gate - $S$
-* T Gate - $T$
-
-### 2-Qubit Gates (4x4 Matrices)
-
-* CNOT / CX Gate - $CNOT$
-* CZ Gate - $CZ$
-* SWAP Gate - $\text{SWAP}$
-
-### 3-Qubit Gates (8x8 Matrices)
-
-* Toffoli / CCX Gate - $Toffoli$
-
-More quantum gates can be created easily by defining it with the type:
-
-```cpp
-std::vector<std::vector<std::complex<double>>>
-```
-
-The quantum gate must be square and it's size must be $2^n$ where n is the number of qbits the quantum gate is applied to.
+Developed by Nicolás Gómez Navarro and Adan Gallego Riera.
