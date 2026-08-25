@@ -238,10 +238,9 @@
       let controlQbit = null;
       let control2Qbit = null;
 
-      // 1. Cuando pones una multigate, salta alarma preguntando donde quieres poner la union de la puerta
       if (['CX', 'CZ', 'SWAP', 'SWP'].includes(type)) {
         let ans = prompt(`Has soltado un ${type} en el q[${qubit}].\n¿Cuál es el Qubit de CONTROL? (Escribe un número del 0 al ${NUM_QUBITS - 1})`);
-        if (ans === null || ans === "") return; // Si cancela, no dibuja nada
+        if (ans === null || ans === "") return;
         controlQbit = parseInt(ans);
         if (isNaN(controlQbit) || controlQbit < 0 || controlQbit >= NUM_QUBITS || controlQbit === qubit) {
           alert("Qubit de control inválido. Debe ser un número distinto al objetivo.");
@@ -255,25 +254,35 @@
         control2Qbit = parseInt(ans2);
       }
 
+      const usedQubits = [qubit];
+      if (controlQbit !== null) usedQubits.push(controlQbit);
+      if (control2Qbit !== null) usedQubits.push(control2Qbit);
+
+      const isOccupied = placedGates.some(g => {
+        if (g.step !== step) return false;
+        const existingQubits = [g.qubit];
+        if (g.controlQbit !== null) existingQubits.push(g.controlQbit);
+        if (g.control2Qbit !== null) existingQubits.push(g.control2Qbit);
+        return usedQubits.some(q => existingQubits.includes(q));
+      });
+
+      if (isOccupied) {
+        return;
+      }
+
       const group = new Konva.Group({ x: START_X + step * STEP_WIDTH, y: START_Y + qubit * QUBIT_HEIGHT, draggable: true });
 
-
-
-      // 2. Dibujar las lineas verticales y los puntos de control de las multipuertas
       if (controlQbit !== null) {
-        // Calcular distancia visual desde el objetivo al control
         const controlYOffset = (controlQbit - qubit) * QUBIT_HEIGHT;
         
-        // Línea vertical
         group.add(new Konva.Line({
           points: [0, 0, 0, controlYOffset], stroke: colors[type], strokeWidth: 3
         }));
-        // Punto en el control
+        
         group.add(new Konva.Circle({
           x: 0, y: controlYOffset, radius: 6, fill: colors[type]
         }));
 
-        // Si es Toffoli (CCX), dibujar el segundo control (es una puerta cuantica con 3 uniones)
         if (control2Qbit !== null) {
           const control2YOffset = (control2Qbit - qubit) * QUBIT_HEIGHT;
           group.add(new Konva.Line({
@@ -285,7 +294,6 @@
         }
       }
 
-      // 3. Dibujar la caja de la puerta (Objetivo)
       group.add(new Konva.Rect({
         x: -GATE_SIZE / 2, y: -GATE_SIZE / 2, width: GATE_SIZE, height: GATE_SIZE,
         fill: colors[type] || '#89b4fa', cornerRadius: 6, shadowColor: 'black', shadowBlur: 5, shadowOpacity: 0.3
@@ -298,7 +306,6 @@
 
       layer.add(group);
       
-      // Guardar toda la info para enviarla luego al C++
       const gateData = { type, qubit, step, group, controlQbit, control2Qbit };
       placedGates.push(gateData);
 
@@ -313,32 +320,42 @@
         const newQubit = Math.max(0, Math.min(NUM_QUBITS - 1, Math.round((newPos.y - START_Y) / QUBIT_HEIGHT)));
         const newStep = Math.max(0, Math.min(NUM_STEPS - 1, Math.round((newPos.x - START_X) / STEP_WIDTH)));
         
-        // --- 1. Calculate how much the gate moved vertically ---
         const qubitShift = newQubit - gateData.qubit;
 
-        // Snap the visual group into the grid
+        const intendedQubits = [newQubit];
+        if (gateData.controlQbit !== null) intendedQubits.push(gateData.controlQbit + qubitShift);
+        if (gateData.control2Qbit !== null) intendedQubits.push(gateData.control2Qbit + qubitShift);
+
+        const isOutOfBounds = intendedQubits.some(q => q < 0 || q >= NUM_QUBITS);
+
+        const isCollision = placedGates.some(g => {
+          if (g === gateData) return false; 
+          if (g.step !== newStep) return false;
+          const existingQubits = [g.qubit];
+          if (g.controlQbit !== null) existingQubits.push(g.controlQbit);
+          if (g.control2Qbit !== null) existingQubits.push(g.control2Qbit);
+          return intendedQubits.some(q => existingQubits.includes(q));
+        });
+
+        if (isOutOfBounds || isCollision) {
+          group.position({ x: START_X + gateData.step * STEP_WIDTH, y: START_Y + gateData.qubit * QUBIT_HEIGHT });
+          layer.draw();
+          return;
+        }
+
         group.position({ x: START_X + newStep * STEP_WIDTH, y: START_Y + newQubit * QUBIT_HEIGHT });
         
-        // --- 2. Update the target qubit and time step ---
         gateData.qubit = newQubit; 
         gateData.step = newStep;
 
-        // --- 3. Shift the control qubits by the exact same amount ---
-        if (gateData.controlQbit !== null) {
-            gateData.controlQbit += qubitShift;
-        }
-        if (gateData.control2Qbit !== null) {
-            gateData.control2Qbit += qubitShift;
-        }
+        if (gateData.controlQbit !== null) gateData.controlQbit += qubitShift;
+        if (gateData.control2Qbit !== null) gateData.control2Qbit += qubitShift;
 
         layer.draw();
       });
+      
       layer.draw();
     }
-
-
-
-
     
     // --- CONEXIÓN CON C++ ---  
     let myChart = null;
