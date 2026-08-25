@@ -148,18 +148,50 @@
     let placedGates = [];
 
     function drawGrid() {
-      layer.destroyChildren();
+      const validGates = [];
+      
+      for (let g of placedGates) {
+        if (g.qubit < NUM_QUBITS && 
+          (g.controlQbit === null || g.controlQbit < NUM_QUBITS) &&
+          (g.control2Qbit === null || g.control2Qbit < NUM_QUBITS)) {
+          validGates.push(g);
+        } else {
+          g.group.destroy();
+        }
+      }
+      placedGates = validGates;
+
+      layer.find('.gridNode').forEach(node => node.destroy());
+
       for (let q = 0; q < NUM_QUBITS; q++) {
         const y = START_Y + q * QUBIT_HEIGHT;
-        layer.add(new Konva.Text({
-          x: 40, y: y - 10, text: `q[${q}]`, fontSize: 18, fill: '#89b4fa', fontFamily: 'monospace', fontStyle: 'bold'
-        }));
-        layer.add(new Konva.Line({
-          points: [START_X - 20, y, START_X + NUM_STEPS * STEP_WIDTH, y], stroke: '#45475a', strokeWidth: 2, dash: [6, 4]
-        }));
+        
+        const qubitLabel = new Konva.Text({
+          x: 40, 
+          y: y - 10, 
+          text: `q[${q}]`, 
+          fontSize: 18, 
+          fill: '#89b4fa', 
+          fontFamily: 'monospace', 
+          fontStyle: 'bold', 
+          name: 'gridNode'
+        });
+        
+        const qubitLine = new Konva.Line({
+          points: [START_X - 20, y, START_X + NUM_STEPS * STEP_WIDTH, y], 
+          stroke: '#45475a', 
+          strokeWidth: 2, 
+          dash: [6, 4], 
+          name: 'gridNode'
+        });
+
+        layer.add(qubitLabel);
+        layer.add(qubitLine);
+        
+        qubitLabel.moveToBottom();
+        qubitLine.moveToBottom();
       }
-      placedGates = placedGates.filter(g => g.qubit < NUM_QUBITS);
-      placedGates.forEach(g => layer.add(g.group));
+      
       layer.draw();
     }
     drawGrid();
