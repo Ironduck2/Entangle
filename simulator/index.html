@@ -86,7 +86,7 @@
         <div class="gate-item" style="background-color: #eba0ac;" draggable="true" data-type="T">T</div>
         
         <!-- Multi Puertas, para cambiar color y nombre -->
-        <div class="gate-item" style="background-color: #94e2d5; font-size: 0.9rem;" draggable="true" data-type="CNOT">CX</div>
+        <div class="gate-item" style="background-color: #94e2d5; font-size: 0.9rem;" draggable="true" data-type="CX">CX</div>
         <div class="gate-item" style="background-color: #74c7ec; font-size: 0.9rem;" draggable="true" data-type="CZ">CZ</div>
         <div class="gate-item" style="background-color: #f5c2e7; font-size: 0.7rem;" draggable="true" data-type="SWAP">SWP</div>
         <div class="gate-item" style="background-color: #f2cdcd; font-size: 0.8rem;" draggable="true" data-type="CCX">CCX</div>
@@ -200,14 +200,14 @@
       const colors = { 
         H: '#89b4fa', X: '#f9e2af', Y: '#f38ba8', Z: '#cba6f7',
         I: '#a6e3a1', S: '#fab387', T: '#eba0ac',
-        CNOT: '#94e2d5', CX: '#94e2d5', CZ: '#74c7ec', SWAP: '#f5c2e7', CCX: '#f2cdcd'
+        CX: '#94e2d5', CZ: '#74c7ec', SWAP: '#f5c2e7', CCX: '#f2cdcd'
       };
 
       let controlQbit = null;
       let control2Qbit = null;
 
       // 1. Cuando pones una multigate, salta alarma preguntando donde quieres poner la union de la puerta
-      if (['CNOT', 'CX', 'CZ', 'SWAP', 'SWP'].includes(type)) {
+      if (['CX', 'CZ', 'SWAP', 'SWP'].includes(type)) {
         let ans = prompt(`Has soltado un ${type} en el q[${qubit}].\n¿Cuál es el Qubit de CONTROL? (Escribe un número del 0 al ${NUM_QUBITS - 1})`);
         if (ans === null || ans === "") return; // Si cancela, no dibuja nada
         controlQbit = parseInt(ans);
